@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Siii0"><meta name="copyright" content="Siii0"><meta name="generator" content="Hexo 6.0.0"><meta name="theme" content="hexo-theme-yun"><title>WEB基础（网络协议、HTTP、WEB服务器） | Siii0的博客</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"siii0.github.io","root":"/","title":"Siii0","version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"fireworks":{"colors":["102, 167, 221","62, 131, 225","33, 78, 194"]}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="一、网络1.1 网络的历史​        最初是由于美国国防部认为，如果仅有一个集中的指挥中心很危险，所以需要设计一个分散的指挥系统，以确保部分指挥点被摧毁，其他指挥点仍能正常工作。 ​        1969年，美国国防部高级研究计划管理局（ARPA）开始建立一个名为ARPAnet的网络。当初，ARPAnet只连接了四台主机，并置于美国国防部高度机密的保护之下，所以还不具备向外推广的条件。 ​">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WEB基础（网络协议、HTTP、WEB服务器）">
+<meta property="og:url" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="Siii0的博客">
+<meta property="og:description" content="一、网络1.1 网络的历史​        最初是由于美国国防部认为，如果仅有一个集中的指挥中心很危险，所以需要设计一个分散的指挥系统，以确保部分指挥点被摧毁，其他指挥点仍能正常工作。 ​        1969年，美国国防部高级研究计划管理局（ARPA）开始建立一个名为ARPAnet的网络。当初，ARPAnet只连接了四台主机，并置于美国国防部高度机密的保护之下，所以还不具备向外推广的条件。 ​">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122115356389.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122133835551.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122134724597.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220123105526604.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220123105712511.png">
+<meta property="article:published_time" content="2022-04-11T15:40:10.539Z">
+<meta property="article:modified_time" content="2022-04-11T15:43:03.106Z">
+<meta property="article:author" content="Siii0">
+<meta property="article:tag" content="WEB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122115356389.png"><script src="/js/ui/mode.js"></script></head><body><script defer src="https://cdn.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Siii0"><img width="96" loading="lazy" src="/images/tom.jpg" alt="Siii0"></a><div class="site-author-name"><a href="/about/">Siii0</a></div><span class="site-name">Siii0的博客</span><sub class="site-subtitle"></sub><div class="site-desciption">如果你停止，就是谷底，如果你还在继续，就是上坡。</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">13</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">10</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">12</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-settings-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" title="QQ 2373589667" target="_blank" style="color:#12B7F5"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-qq-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="微信 Siiioz" target="_blank" style="color:#1AAD19"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-2-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="E-Mail 2373589667@qq.com" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BD%91%E7%BB%9C"><span class="toc-number">1.</span> <span class="toc-text">一、网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E7%BD%91%E7%BB%9C%E7%9A%84%E5%8E%86%E5%8F%B2"><span class="toc-number">2.</span> <span class="toc-text">1.1 网络的历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE"><span class="toc-number">3.</span> <span class="toc-text">1.2 网络协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">1.2.1 什么是网络协议？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-TCP-IP%E5%8D%8F%E8%AE%AE%E6%97%8F"><span class="toc-number">3.2.</span> <span class="toc-text">1.2.2 TCP&#x2F;IP协议族</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-IP%E5%8D%8F%E8%AE%AE-IP%E5%9C%B0%E5%9D%80%EF%BC%88%E7%BD%91%E7%BB%9C%E5%B1%82%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">1.2.3 IP协议&#x2F;IP地址（网络层）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89IP%E5%9C%B0%E5%9D%80"><span class="toc-number">3.3.1.</span> <span class="toc-text">（1）IP地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89IP%E8%B7%AF%E7%94%B1"><span class="toc-number">3.3.2.</span> <span class="toc-text">（2）IP路由</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89IP%E4%BF%A1%E6%81%AF%E5%8C%85%E4%BC%A0%E9%80%81"><span class="toc-number">3.3.3.</span> <span class="toc-text">（3）IP信息包传送</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-4-TCP-%E5%92%8C-UDP%EF%BC%88%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">1.2.4 TCP 和 UDP（传输层）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89TCP%EF%BC%88%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">3.4.1.</span> <span class="toc-text">（1）TCP（传输控制协议）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%EF%BC%88%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5%EF%BC%89"><span class="toc-number">3.4.1.1.</span> <span class="toc-text">三次握手（建立连接）</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89UDP%EF%BC%88%E7%94%A8%E6%88%B7%E6%95%B0%E6%8D%AE%E6%8A%A5%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">3.4.2.</span> <span class="toc-text">（2）UDP（用户数据报协议）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E5%85%B6%E4%BB%96"><span class="toc-number">3.4.3.</span> <span class="toc-text">（3）其他</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-5-DNS-%E3%80%81DHCP-%E5%92%8C-FTP%EF%BC%88%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">1.2.5 DNS 、DHCP 和 FTP（应用层）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89DNS%EF%BC%88%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="toc-number">3.5.1.</span> <span class="toc-text">（1）DNS（域名解析系统）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89DHCP%EF%BC%88%E5%8A%A8%E6%80%81%E4%B8%BB%E6%9C%BA%E9%85%8D%E7%BD%AE%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">3.5.2.</span> <span class="toc-text">（2）DHCP（动态主机配置协议）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89FTP%EF%BC%88%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">3.5.3.</span> <span class="toc-text">（3）FTP（文件传输协议）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81HTTP"><span class="toc-number">4.</span> <span class="toc-text">二、HTTP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-%E4%BB%80%E4%B9%88%E6%98%AFHTTP"><span class="toc-number">4.0.1.</span> <span class="toc-text">2.1 什么是HTTP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E8%AF%B7%E6%B1%82%E5%A4%B4%E7%B1%BB%E5%9E%8B%EF%BC%88HTTP-Headers%EF%BC%89"><span class="toc-number">4.0.2.</span> <span class="toc-text">2.2 请求头类型（HTTP Headers）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E7%8A%B6%E6%80%81%E6%B6%88%E6%81%AF%EF%BC%88%E7%8A%B6%E6%80%81%E7%A0%81%EF%BC%89"><span class="toc-number">4.0.3.</span> <span class="toc-text">2.3 状态消息（状态码）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81HTTPS"><span class="toc-number">5.</span> <span class="toc-text">三、HTTPS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-%E4%BB%80%E4%B9%88%E6%98%AFHTTPS"><span class="toc-number">5.0.1.</span> <span class="toc-text">3.1 什么是HTTPS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-%E4%BB%80%E4%B9%88%E6%98%AFSSL"><span class="toc-number">5.0.2.</span> <span class="toc-text">3.2 什么是SSL</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Web%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">6.</span> <span class="toc-text">四、Web服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%BB%80%E4%B9%88%E6%98%AFWeb%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 什么是Web服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-%E4%B8%BB%E6%B5%81%E7%9A%84Web%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">6.1.1.</span> <span class="toc-text">4.2 主流的Web服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1%E3%80%81Apache"><span class="toc-number">6.1.1.1.</span> <span class="toc-text">1、Apache</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2%E3%80%81IIS"><span class="toc-number">6.1.1.2.</span> <span class="toc-text">2、IIS</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3%E3%80%81Nginx"><span class="toc-number">6.1.1.3.</span> <span class="toc-text">3、Nginx</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%9A"><span class="toc-number">6.1.1.4.</span> <span class="toc-text">反向代理服务器：</span></a></li></ol></li></ol></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="http://Siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Siii0"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Siii0的博客"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">WEB基础（网络协议、HTTP、WEB服务器）</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="创建时间：2022-04-11 23:40:10" itemprop="dateCreated datePublished" datetime="2022-04-11T23:40:10+08:00">2022-04-11</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/WEB%E5%9F%BA%E7%A1%80/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">WEB基础</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/WEB/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">WEB</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h2 id="一、网络"><a href="#一、网络" class="headerlink" title="一、网络"></a>一、网络</h2><h2 id="1-1-网络的历史"><a href="#1-1-网络的历史" class="headerlink" title="1.1 网络的历史"></a>1.1 网络的历史</h2><p>​        最初是由于美国国防部认为，如果仅有一个集中的指挥中心很危险，所以需要设计一个分散的指挥系统，以确保部分指挥点被摧毁，其他指挥点仍能正常工作。</p>
+<p>​        1969年，美国国防部高级研究计划管理局（ARPA）开始建立一个名为<code>ARPAnet</code>的网络。当初，ARPAnet只连接了四台主机，并置于美国国防部高度机密的保护之下，所以还不具备向外推广的条件。</p>
+<p>​        1986年，美国国家科学基金会（NSF）利用ARPAnet发展出来的<code>TCP/IP通讯协议</code>，在5个超级电脑的基础上建立了<code>NSFnet广域网</code>。</p>
+<p>由于NSF的鼓励和自助，很多大学和机构将自己的局域网并入了NSFnet。ARPAnet也逐步被NSFnet替代。到1990年，ARPAnet–网络之父，退出历史舞台。如今，NSFnet已经成为Internet的重要骨干网之一。</p>
+<p>​        1989年，欧洲核子研究组织（CERN）开发成功WWW，为Internet实现广域超媒体截取/检索奠定了基础。</p>
+<h2 id="1-2-网络协议"><a href="#1-2-网络协议" class="headerlink" title="1.2 网络协议"></a>1.2 网络协议</h2><h3 id="1-2-1-什么是网络协议？"><a href="#1-2-1-什么是网络协议？" class="headerlink" title="1.2.1 什么是网络协议？"></a>1.2.1 什么是网络协议？</h3><p>网络协议为计算机网络中进行数据交换而建立的规则、约定或约定的集合。</p>
+<p>例如，两个不同终端之间要进行通讯，但是由于不同终端使用的字符集不同而无法通讯，这时就需要将各自的字符集转换为标准的字符集，再进行通讯，到达目的终端后，再转换为各自的字符集。</p>
+<h3 id="1-2-2-TCP-IP协议族"><a href="#1-2-2-TCP-IP协议族" class="headerlink" title="1.2.2 TCP/IP协议族"></a>1.2.2 TCP/IP协议族</h3><p>OSI参考模型为网络框架提供参考，目前常用的协议有TCP/IP协议等</p>
+<table>
+<thead>
+<tr>
+<th align="center">OSI七层参考模型</th>
+<th align="center"></th>
+<th align="center">TCP/IP四层应用模型</th>
+<th align="center"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">7-应用层</td>
+<td align="center">用户的应用程序和网络之间的接口</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">6-表达层</td>
+<td align="center">协商数据交换格式</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">5-会话层</td>
+<td align="center">允许用户使用简单易记的名称建立连接</td>
+<td align="center">5-7 应用层</td>
+<td align="center"><strong>HTTP</strong>,DNS,FTP,SMTP,TELNET</td>
+</tr>
+<tr>
+<td align="center">4-传输层</td>
+<td align="center">传输数据包的处理</td>
+<td align="center">4-传输层</td>
+<td align="center"><strong>TCP</strong>,<strong>UDP</strong></td>
+</tr>
+<tr>
+<td align="center">3-网络层</td>
+<td align="center">IP地址</td>
+<td align="center">3-网络层</td>
+<td align="center"><strong>IP</strong>，ICMP,ARP,RARP</td>
+</tr>
+<tr>
+<td align="center">2-数据链路层</td>
+<td align="center">处理传输的字节</td>
+<td align="center">1-2 网络接口层</td>
+<td align="center">各种物理通信网络接口</td>
+</tr>
+<tr>
+<td align="center">1-物理层</td>
+<td align="center">硬件</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p><img src="/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122115356389.png" alt="image-20220122115356389" loading="lazy"></p>
+<p>这个图片也很好的解释了TCP/IP协议传输的过程，每一层都会进行相应的处理并加上对应的协议</p>
+<h3 id="1-2-3-IP协议-IP地址（网络层）"><a href="#1-2-3-IP协议-IP地址（网络层）" class="headerlink" title="1.2.3 IP协议/IP地址（网络层）"></a>1.2.3 IP协议/IP地址（网络层）</h3><p>IP是Internet Protocol（网际互连协议）的缩写，是TCP/IP体系中的<strong>网络层协议</strong>。</p>
+<h4 id="（1）IP地址"><a href="#（1）IP地址" class="headerlink" title="（1）IP地址"></a>（1）IP地址</h4><p>IPv4地址使用32位，以点分十进制表示，如：192.168.0.1</p>
+<p>127.0.0.1 ：本机</p>
+<p>192.168.*.* ：局域网（私人）</p>
+<p>10.*.*.* ：局域网（大型企业）</p>
+<p>其他 ：外部广域网</p>
+<p>IPv6地址使用128位，16个字节，用8个无符号整数（八个2字节）组成</p>
+<p>例如： <code>3f3f:1f34:13dc:ab43:1272:12ff:78ff:ff91</code></p>
+<p>各个数之间用冒号隔开</p>
+<h4 id="（2）IP路由"><a href="#（2）IP路由" class="headerlink" title="（2）IP路由"></a>（2）IP路由</h4><p>​        互联网是由许多个网络连接所形成的大型网络。如果要在互联网中传送IP信息包，除了确保网络上每个设备都有一个<strong>唯一的IP地址</strong>之外，网络之间还必须有<strong>传送的机制</strong>，才能将IP信息包通过一个个的网络传送到目的地。此种传送机制称为IP路由。</p>
+<p>​        传输信息时，必须依靠沿途各路由器的通力合作，才能将IP信息包送到目的地。在IP路由的过程中，由<strong>路由器负责选择路径</strong>，<strong>IP信息包则是被传送的对象</strong>。</p>
+<p>​        这里就能体现IP信息包传送的特性:<strong>非连接式的传送方式</strong>。即源设备只需要将信息报发出，其他步骤（是否收到、收到是否正确等）则由上层的协议（如TCP）来检查。</p>
+<p><img src="/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122133835551.png" alt="image-20220122133835551" loading="lazy"></p>
+<h4 id="（3）IP信息包传送"><a href="#（3）IP信息包传送" class="headerlink" title="（3）IP信息包传送"></a>（3）IP信息包传送</h4><p>​        IP是网络之间信息传送的协议，可将IP信息包传送到目的设备，依赖IP地址和IP路由两种机制来实现。</p>
+<h3 id="1-2-4-TCP-和-UDP（传输层）"><a href="#1-2-4-TCP-和-UDP（传输层）" class="headerlink" title="1.2.4 TCP 和 UDP（传输层）"></a>1.2.4 TCP 和 UDP（传输层）</h3><h4 id="（1）TCP（传输控制协议）"><a href="#（1）TCP（传输控制协议）" class="headerlink" title="（1）TCP（传输控制协议）"></a>（1）TCP（传输控制协议）</h4><p>一种面向<strong>连接</strong>的、<strong>可靠</strong>的、基于字节流的传输层通信协议</p>
+<h5 id="三次握手（建立连接）"><a href="#三次握手（建立连接）" class="headerlink" title="三次握手（建立连接）"></a>三次握手（建立连接）</h5><p>下图便是三次握手的过程，通过这三次握手，便成功建立连接，可以开始传输数据</p>
+<p><img src="/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220122134724597.png" alt="image-20220122134724597" loading="lazy"></p>
+<h4 id="（2）UDP（用户数据报协议）"><a href="#（2）UDP（用户数据报协议）" class="headerlink" title="（2）UDP（用户数据报协议）"></a>（2）UDP（用户数据报协议）</h4><p>一种<strong>非连接</strong>、<strong>不可靠</strong>的连接方式，虽然UDP是一个不可靠的协议，但它是<strong>分发信息</strong>的一个理想协议。</p>
+<p><strong>优点在于效率高、速度快，适合音频和视频的传输</strong></p>
+<h4 id="（3）其他"><a href="#（3）其他" class="headerlink" title="（3）其他"></a>（3）其他</h4><p>百度搜了一下，微信使用的是TCP协议，而QQ主要是UDP，辅以TCP协议</p>
+<h3 id="1-2-5-DNS-、DHCP-和-FTP（应用层）"><a href="#1-2-5-DNS-、DHCP-和-FTP（应用层）" class="headerlink" title="1.2.5 DNS 、DHCP 和 FTP（应用层）"></a>1.2.5 DNS 、DHCP 和 FTP（应用层）</h3><h4 id="（1）DNS（域名解析系统）"><a href="#（1）DNS（域名解析系统）" class="headerlink" title="（1）DNS（域名解析系统）"></a>（1）DNS（域名解析系统）</h4><p>使用UDP 端口53</p>
+<p>域名和IP地址之间是一一对应的，所以有一个域名服务器</p>
+<p>域名是为了方便人们记忆的，但信息之间的传送需要IP地址，所以当我们访问一个域名（如baidu.com）的时候，浏览器会先去访问DNS，找到对应的IP地址，这就叫做<strong>域名解析</strong>。</p>
+<p>所以，有的时候访问域名不成功，而直接访问IP地址就可以，这就有可能是因为DNS服务器故障了或者是域名没有绑定IP地址导致的</p>
+<h4 id="（2）DHCP（动态主机配置协议）"><a href="#（2）DHCP（动态主机配置协议）" class="headerlink" title="（2）DHCP（动态主机配置协议）"></a>（2）DHCP（动态主机配置协议）</h4><p>UDP （DHCP服务器的67号端口，主机的68号端口）</p>
+<p>​        DHCP是一个<strong>局域网的网络协议</strong>，主要作用是<strong>集中的管理、分配IP地址</strong>，使网络环境中的主机动态的获得IP地址、Gateway地址、DNS服务器地址等信息，并能够提升地址的使用率。</p>
+<p>​        比如使用无线设备的时候，基本上都是使用DHCP来获得IP地址的</p>
+<h4 id="（3）FTP（文件传输协议）"><a href="#（3）FTP（文件传输协议）" class="headerlink" title="（3）FTP（文件传输协议）"></a>（3）FTP（文件传输协议）</h4><p>默认端口为21</p>
+<p>用于网络上的控制文件的双向传输，同时它也是一个<strong>应用程序</strong>，基于不同的操作系统有不同的FTP应用程序，但都<strong>遵循TCP协议</strong>。</p>
+<h2 id="二、HTTP"><a href="#二、HTTP" class="headerlink" title="二、HTTP"></a>二、HTTP</h2><h4 id="2-1-什么是HTTP"><a href="#2-1-什么是HTTP" class="headerlink" title="2.1 什么是HTTP"></a>2.1 什么是HTTP</h4><p>超文本传输协议（Hyper Text Transfer Protocol），是一个简单的请求-响应（Request-Response）协议，它通常运行在TCP之上。</p>
+<p>默认端口为80(在未指定端口的情况下，访问的就是80端口)</p>
+<ul>
+<li>客户与服务器之间的HTTP连接是一种<strong>一次性连接</strong>，它限制每次连接只处理一个请求，当服务器返回本次请求的应答后便立即关闭连接，下次请求再重新建立连接，大大<strong>提高了服务器的执行效率</strong>。</li>
+<li>HTTP是一种<strong>无状态协议</strong>，即服务器<strong>不保留</strong>与客户交易时的任何状态。</li>
+<li>使用可扩展的语义和自描述消息格式</li>
+</ul>
+<p>例如：当我们访问博客的时候<code>http://Siii0.top</code></p>
+<p>HTTP协议就会发送一个请求头（Request）：</p>
+<p>报文格式：请求行 - 请求头 - 报文主体</p>
+<p><img src="/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220123105526604.png" alt="image-20220123105526604" loading="lazy"></p>
+<p>这个请求头中我们可以根据需要添加和修改相应的Header（比如: Cookie: 123)</p>
+<p>同样的，也会接收到一个响应头（Response）：</p>
+<p>报文格式： 请求行 - 响应头 - 报文主体</p>
+<p><img src="/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/image-20220123105712511.png" alt="image-20220123105712511" loading="lazy"></p>
+<p><strong>主体和头之间要有空行来区分两者</strong></p>
+<h4 id="2-2-请求头类型（HTTP-Headers）"><a href="#2-2-请求头类型（HTTP-Headers）" class="headerlink" title="2.2 请求头类型（HTTP Headers）"></a>2.2 请求头类型（HTTP Headers）</h4><p>一般常用的有：</p>
+<ul>
+<li>Host ： 指定请求的服务器的域名和端口号    <code>Host:siii0.top</code></li>
+<li>User-Agent ：内容包含发出请求的用户信息（比如使用的浏览器、操作系统等）</li>
+<li>Referer ：先前网页的地址，即来路</li>
+<li>Content-Type ：请求的与实体对应的MIME信息</li>
+<li>Cache-Control ：指定请求和响应遵循的缓存机制（比如指定缓存的时间）</li>
+</ul>
+<p>具体可以参考 <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_45521281/article/details/105775452?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2~default~CTRLIST~Rate-1.pc_relevant_default&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2~default~CTRLIST~Rate-1.pc_relevant_default&utm_relevant_index=1">CTF-WEB——HTTP Headers类型</a></p>
+<h4 id="2-3-状态消息（状态码）"><a href="#2-3-状态消息（状态码）" class="headerlink" title="2.3 状态消息（状态码）"></a>2.3 状态消息（状态码）</h4><p>由3位数字组成，表示请求是否被理解或被满足。</p>
+<ul>
+<li>1XX ：信息</li>
+</ul>
+<p>例如：100 Continue ：服务器仅接收到部分请求，但是一旦服务器并没有拒绝该请求，客户端应该继续发送其余的请求。</p>
+<ul>
+<li>2XX ：成功</li>
+</ul>
+<p>例如：200 OK ：请求成功（其后是对GET和POST请求的应答文档。）</p>
+<ul>
+<li>3XX ：重定向</li>
+</ul>
+<p>例如：302 Found ：所请求的页面已经临时转移至新的url。</p>
+<ul>
+<li>4XX ：客户端错误</li>
+</ul>
+<p>例如：404 Not Found ：服务器无法找到被请求的页面。</p>
+<ul>
+<li>5XX ：服务器错误</li>
+</ul>
+<p>例如：504 Gateway Timeout ：网关超时。</p>
+<h2 id="三、HTTPS"><a href="#三、HTTPS" class="headerlink" title="三、HTTPS"></a>三、HTTPS</h2><h4 id="3-1-什么是HTTPS"><a href="#3-1-什么是HTTPS" class="headerlink" title="3.1 什么是HTTPS"></a>3.1 什么是HTTPS</h4><p>默认端口为443</p>
+<p>超文本传输安全协议（Hyper Text Transfer Protocol over SecureSocket Layer）</p>
+<p><strong>HTTPS 在HTTP 的基础下加入SSL</strong>，HTTPS 的安全基础是 SSL，因此加密的详细内容就需要 SSL。</p>
+<h4 id="3-2-什么是SSL"><a href="#3-2-什么是SSL" class="headerlink" title="3.2 什么是SSL"></a>3.2 什么是SSL</h4><p>SSL（Secure Sockets Layer 安全套接字协议），及其继承者TLS（传输层安全）是为网络通信提供安全及数据完整性的一种安全协议。<strong>SSL/TLS 在传输层和应用层之间对网络连接进行加密。</strong></p>
+<h2 id="四、Web服务器"><a href="#四、Web服务器" class="headerlink" title="四、Web服务器"></a>四、Web服务器</h2><h3 id="4-1-什么是Web服务器"><a href="#4-1-什么是Web服务器" class="headerlink" title="4.1 什么是Web服务器"></a>4.1 什么是Web服务器</h3><p>Web服务器，一般指网站服务器，是一个<strong>服务器端软件</strong>，<strong>主要功能是提供网上信息浏览服务</strong>。<strong>（处理并向浏览器发送HTML以供浏览）</strong></p>
+<p>所以Web服务器响应并处理的是<strong>静态HTML</strong></p>
+<p>要处理<strong>动态HTML</strong>就需要用到<strong>应用程序服务器</strong>，它们通常会一起使用</p>
+<p><strong>目前最主流的三个Web服务器是Apache、  Nginx  、IIS。</strong></p>
+<p><strong>我的理解</strong>：当我们在个人电脑上查找文件时，都有一个路径可以访问，其实就是在目录系统中查找文件。而我们开发的单纯的网页并不能直接被别人找到，所以这里就用到了Web服务器，起到一个类似于目录系统的功能，可以存放我的网页，也能让别人找到，也可以处理客户端的请求并返回相应响应。</p>
+<h4 id="4-2-主流的Web服务器"><a href="#4-2-主流的Web服务器" class="headerlink" title="4.2 主流的Web服务器"></a>4.2 主流的Web服务器</h4><h5 id="1、Apache"><a href="#1、Apache" class="headerlink" title="1、Apache"></a>1、Apache</h5><p>可以运行在Linux、Windows、Mac上</p>
+<p>它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。</p>
+<h5 id="2、IIS"><a href="#2、IIS" class="headerlink" title="2、IIS"></a>2、IIS</h5><p>是微软的软件，只能运行在Windows上</p>
+<h5 id="3、Nginx"><a href="#3、Nginx" class="headerlink" title="3、Nginx"></a>3、Nginx</h5><p>可以运行在Linux/unix、Windows上</p>
+<p><em>Nginx</em> (engine x) 是一个高性能的HTTP和<strong>反向代理web服务器</strong></p>
+<h5 id="反向代理服务器："><a href="#反向代理服务器：" class="headerlink" title="反向代理服务器："></a><strong>反向代理服务器：</strong></h5><p>当一个代理服务器能够代理外部网络上的主机，访问内部网络时，这种代理服务的方式称为反向代理服务。</p>
+<p>位于用户与目标服务器之间，用户直接访问反向代理服务器就可以获得目标服务器的资源，用户不需要知道目标服务器的地址，提高了访问效率，也增强了Web服务器的安全性。</p>
+</div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Siii0</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/" title="WEB基础（网络协议、HTTP、WEB服务器）">http://siii0.github.io/WEB%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> 许可协议。</li></ul></section></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/BUUCTF-%5BDDCTF%202019%5Dhomebrew%20event%20loop/" rel="next" title="BUUCTF-[DDCTF 2019]homebrew event loop"><span class="post-nav-text">BUUCTF-[DDCTF 2019]homebrew event loop</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; Wed Jan 05 2022 08:00:00 GMT+0800 (中国标准时间) – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Siii0</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.0.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
