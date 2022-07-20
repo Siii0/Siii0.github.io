@@ -1,0 +1,169 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Siii0"><meta name="copyright" content="Siii0"><meta name="generator" content="Hexo 6.0.0"><meta name="theme" content="hexo-theme-yun"><title>红日安全 ATT＆CK VulnStack靶场（三） | Siii0的博客</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"siii0.github.io","root":"/","title":"Siii0","version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"fireworks":{"colors":["102, 167, 221","62, 131, 225","33, 78, 194"]}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="一、前言又是第一次，主要是跟着网上的教程过一遍，熟悉一下思路 二、环境配置这里放一张网上的拓扑图（ip地址会不一样）：  看上去挺形象的，也方便理解整个内网和外网的构造，总共五个靶机 使用kali来进行攻击 我的配置：  kali 192.168.150.128 web-centos 192.168.150.130（出网）&#x2F;192.168.93.100 web1-ubuntu 是nginx的反向代">
+<meta property="og:type" content="article">
+<meta property="og:title" content="红日安全 ATT＆CK VulnStack靶场（三）">
+<meta property="og:url" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/index.html">
+<meta property="og:site_name" content="Siii0的博客">
+<meta property="og:description" content="一、前言又是第一次，主要是跟着网上的教程过一遍，熟悉一下思路 二、环境配置这里放一张网上的拓扑图（ip地址会不一样）：  看上去挺形象的，也方便理解整个内网和外网的构造，总共五个靶机 使用kali来进行攻击 我的配置：  kali 192.168.150.128 web-centos 192.168.150.130（出网）&#x2F;192.168.93.100 web1-ubuntu 是nginx的反向代">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713140918645.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713141649273.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713142952016.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713143838136.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150616555.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150918414.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150932819.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152352838.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152446335.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152603662.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713153439117.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713153806159.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713160731212.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713160952388.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161340060.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161517306.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161639081.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161724947.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713162037276.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713162927254.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713163101015.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713173043162.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713181830890.png">
+<meta property="og:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713182001042.png">
+<meta property="article:published_time" content="2022-07-13T06:02:15.335Z">
+<meta property="article:modified_time" content="2022-07-20T08:32:31.160Z">
+<meta property="article:author" content="Siii0">
+<meta property="article:tag" content="渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713140918645.png"><script src="/js/ui/mode.js"></script></head><body><script defer src="https://cdn.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Siii0"><img width="96" loading="lazy" src="/images/tom.jpg" alt="Siii0"></a><div class="site-author-name"><a href="/about/">Siii0</a></div><span class="site-name">Siii0的博客</span><sub class="site-subtitle"></sub><div class="site-desciption">如果你停止，就是谷底，如果你还在继续，就是上坡。</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">23</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">15</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">17</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-settings-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" title="QQ 2373589667" target="_blank" style="color:#12B7F5"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-qq-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="微信 Siiioz" target="_blank" style="color:#1AAD19"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-2-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="E-Mail 2373589667@qq.com" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">一、前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">二、环境配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%EF%BC%9A%E6%8B%BF%E5%88%B0win2012%E5%9F%9F%E6%8E%A7%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BB%BD%E6%96%87%E4%BB%B6"><span class="toc-number">2.0.1.</span> <span class="toc-text">目标：拿到win2012域控服务器中的一份文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">三、信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%89%AB%E6%8F%8F%E7%9B%AE%E6%A0%87%E7%AB%AF%E5%8F%A3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 扫描目标端口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E8%AE%BF%E9%97%AE80%E7%AB%AF%E5%8F%A3"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 访问80端口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E7%9B%AE%E5%BD%95%E6%89%AB%E6%8F%8F"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 目录扫描</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">四、漏洞利用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5Mysql"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 远程连接Mysql</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E7%99%BB%E5%BD%95%E5%90%8E%E5%8F%B0%EF%BC%88%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 登录后台（上传文件）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E8%9A%81%E5%89%91%E8%BF%9E%E6%8E%A5%EF%BC%88getshell%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 蚁剑连接（getshell）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F"><span class="toc-number">5.</span> <span class="toc-text">五、内网渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 内网信息收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E6%8F%90%E6%9D%83"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E7%BB%A7%E7%BB%AD%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 继续内网信息收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-%E9%9A%A7%E9%81%93%E6%90%AD%E5%BB%BA"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 隧道搭建</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="http://Siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Siii0"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Siii0的博客"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">红日安全 ATT＆CK VulnStack靶场（三）</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="创建时间：2022-07-13 14:02:15" itemprop="dateCreated datePublished" datetime="2022-07-13T14:02:15+08:00">2022-07-13</time><span class="post-meta-divider">-</span><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-2-line"></use></svg></span> <time title="修改时间：2022-07-20 16:32:31" itemprop="dateModified" datetime="2022-07-20T16:32:31+08:00">2022-07-20</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E6%B8%97%E9%80%8F/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">渗透</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/%E6%B8%97%E9%80%8F/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">渗透</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h1 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h1><p>又是第一次，主要是跟着网上的教程过一遍，熟悉一下思路</p>
+<h1 id="二、环境配置"><a href="#二、环境配置" class="headerlink" title="二、环境配置"></a>二、环境配置</h1><p>这里放一张网上的拓扑图（ip地址会不一样）：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713140918645.png" alt="image-20220713140918645" loading="lazy"></p>
+<p>看上去挺形象的，也方便理解整个内网和外网的构造，总共五个靶机</p>
+<p>使用kali来进行攻击</p>
+<p>我的配置：</p>
+<ul>
+<li>kali 192.168.150.128</li>
+<li>web-centos 192.168.150.130（出网）/192.168.93.100</li>
+<li>web1-ubuntu 是nginx的反向代理服务器</li>
+<li>win7 win2008是内部主机</li>
+<li>win2012是域控服务器</li>
+</ul>
+<h3 id="目标：拿到win2012域控服务器中的一份文件"><a href="#目标：拿到win2012域控服务器中的一份文件" class="headerlink" title="目标：拿到win2012域控服务器中的一份文件"></a>目标：拿到win2012域控服务器中的一份文件</h3><h1 id="三、信息收集"><a href="#三、信息收集" class="headerlink" title="三、信息收集"></a>三、信息收集</h1><h2 id="3-1-扫描目标端口"><a href="#3-1-扫描目标端口" class="headerlink" title="3.1 扫描目标端口"></a>3.1 扫描目标端口</h2><p>工具：nmap</p>
+<p>语法：nmap -P 192.168.150.130</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713141649273.png" alt="image-20220713141649273" loading="lazy"></p>
+<p>开放的端口有：</p>
+<ul>
+<li>22（ssh）</li>
+<li>80（http）可以尝试网页登录</li>
+<li>3306（mysql）可以尝试SQL注入，远程连接Mysql等</li>
+</ul>
+<h2 id="3-2-访问80端口"><a href="#3-2-访问80端口" class="headerlink" title="3.2 访问80端口"></a>3.2 访问80端口</h2><p>浏览器访问 192.168.150.130，发现存在网页</p>
+<p>这里又发现一个新工具（wappalyzer），是一个用于指纹扫描的插件，很方便</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713142952016.png" alt="image-20220713142952016" loading="lazy"></p>
+<p>可以看到这个站点使用了 Joomla CMS</p>
+<p>Joomla是一个流行的开源内容管理系统(CMS)世界各地的数百万用于构建强大的网站和在线应用程序</p>
+<p>接下来使用kali自带的msf来扫描Joomla的版本号（这个工具有待学习）：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713143838136.png" alt="image-20220713143838136" loading="lazy"></p>
+<p>版本为 3.9.12</p>
+<p>百度后，查到CVE-2021-23132 RCE漏洞</p>
+<p>影响版本为：Joomla CMS 3.0.0 - 3.9.24</p>
+<p>攻击手段：文件上传（需要登录后台）</p>
+<h2 id="3-3-目录扫描"><a href="#3-3-目录扫描" class="headerlink" title="3.3 目录扫描"></a>3.3 目录扫描</h2><p>工具：dirsearch</p>
+<p>也是扫到了很多文件，在 /configuration.php~ 中，发现了一些配置信息和Mysql的账号和密码：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150616555.png" alt="image-20220713150616555" loading="lazy"></p>
+<p>还有一个 /1.php 泄露了phpinfo页面:</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150918414.png" alt="image-20220713150918414" loading="lazy"></p>
+<p>还有后台登录地址 /administrator/index.php:</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713150932819.png" alt="image-20220713150932819" loading="lazy"></p>
+<blockquote>
+<p>后台登录页面：</p>
+<p>没有验证码，可以尝试弱密码和暴力破解，这里没有弱密码，就跟着教程继续往下走了</p>
+</blockquote>
+<p>其他的文件作用都不大</p>
+<h1 id="四、漏洞利用"><a href="#四、漏洞利用" class="headerlink" title="四、漏洞利用"></a>四、漏洞利用</h1><h2 id="4-1-远程连接Mysql"><a href="#4-1-远程连接Mysql" class="headerlink" title="4.1 远程连接Mysql"></a>4.1 远程连接Mysql</h2><p>由于知道了Mysql的用户名和密码，使用 Navicat 远程连接Mysql</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152352838.png" alt="image-20220713152352838" loading="lazy"></p>
+<p>成功连接，翻找一些有用的信息，找到了两个类似于管理员的信息：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152446335.png" alt="image-20220713152446335" loading="lazy"></p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713152603662.png" alt="image-20220713152603662" loading="lazy"></p>
+<p>由于密码是加密的，这里也不知道用什么去解密（应该也解不了）</p>
+<p>这里教程说可以查看官方文档：<a target="_blank" rel="noopener" href="https://docs.joomla.org/How_do_you_recover_or_reset_your_admin_password%3F/zh-cn">https://docs.joomla.org/How_do_you_recover_or_reset_your_admin_password%3F/zh-cn</a></p>
+<p>有时这确实是一种方法</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713153439117.png" alt="image-20220713153439117" loading="lazy"></p>
+<p>在官方文档中找到了一些明文和密文，以及在数据库中添加新用户的SQL代码，那么修改表的名称后直接运行上述代码：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713153806159.png" alt="image-20220713153806159" loading="lazy"></p>
+<p>这样我们就有了用户名和密码：admin2/secret</p>
+<h2 id="4-2-登录后台（上传文件）"><a href="#4-2-登录后台（上传文件）" class="headerlink" title="4.2 登录后台（上传文件）"></a>4.2 登录后台（上传文件）</h2><p>使用新添加的账号密码进入后台</p>
+<p>结合网上漏洞的复现，在模板处找到了文件上传的位置</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713160731212.png" alt="image-20220713160731212" loading="lazy"></p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713160952388.png" alt="image-20220713160952388" loading="lazy"></p>
+<p>成功创建文件后，其实并不知道具体的文件位置，翻了一下刚刚扫描的目录：</p>
+<p>发现有类似的路径</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161340060.png" alt="image-20220713161340060" loading="lazy"></p>
+<p>于是访问 /templates/beez3/shell_1.php 发送post请求 cmd=phpinfo();</p>
+<p>成功显示phpinfo页面：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161517306.png" alt="image-20220713161517306" loading="lazy"></p>
+<h2 id="4-3-蚁剑连接（getshell）"><a href="#4-3-蚁剑连接（getshell）" class="headerlink" title="4.3 蚁剑连接（getshell）"></a>4.3 蚁剑连接（getshell）</h2><p>成功连接蚁剑</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161639081.png" alt="image-20220713161639081" loading="lazy"></p>
+<p>但是并没有权限：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713161724947.png" alt="image-20220713161724947" loading="lazy"></p>
+<p>可以从之前泄露的phpinfo页面中看到，disabled_function 禁用了很多命令：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713162037276.png" alt="image-20220713162037276" loading="lazy"></p>
+<p><strong>根据php版本 7.1.32</strong></p>
+<p>这里我使用了之前下载过的exp，将该php文件上传后，就能绕过disabled_function:</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713162927254.png" alt="image-20220713162927254" loading="lazy"></p>
+<p>访问该文件就能执行系统命令：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713163101015.png" alt="image-20220713163101015" loading="lazy"></p>
+<p>教程中是使用了蚁剑的插件，这样更方便一点：</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://github.com/AntSword-Store">https://github.com/AntSword-Store</a></p>
+<p>（这里由于网络原因没下载，txt格式就将就着看吧。。）</p>
+<h1 id="五、内网渗透"><a href="#五、内网渗透" class="headerlink" title="五、内网渗透"></a>五、内网渗透</h1><h2 id="5-1-内网信息收集"><a href="#5-1-内网信息收集" class="headerlink" title="5.1 内网信息收集"></a>5.1 内网信息收集</h2><blockquote>
+<p>ifconfig                     查看ip地址    192.168.93.120</p>
+<p>cat /etc/issue           查看系统名称    Ubuntu 16.04.6 LTS \n \l</p>
+<p>cat /etc/*release     查看linux发行信息    </p>
+<p>uname -an                查看内核版本</p>
+<p>cat /proc/version     查看内核信息</p>
+<p>cat /etc/passwd        存放用户名信息，没有密码信息</p>
+<p>cat /etc/shadow        存放用户名密码信息，密码被加密，只有root用户才能读取</p>
+<p>id                                 uid=33(www-data) gid=33(www-data) groups=33(www-data)</p>
+</blockquote>
+<p>可以看到192.168.93.120 跟我们访问的ip（192.168.150.130）并不一样，这就说明这是其他网段的地址，并且还不出网，由另外一台主机进行反向代理（因为反向代理我们只能知道代理服务器的ip）</p>
+<p>好像我这个靶机少了文件（/tmp/mysql/test.txt），在其他地方找了半天也没找到：</p>
+<pre class="line-numbers language-none"><code class="language-none">www-data:&#x2F;var&#x2F;www&#x2F;html&#x2F;templates&#x2F;protostar) $ cat &#x2F;tmp&#x2F;mysql&#x2F;test.txt
+adduser wwwuser
+passwd wwwuser_123Aqx
+(www-data:&#x2F;var&#x2F;www&#x2F;html&#x2F;templates&#x2F;protostar) $ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p> adduser 是增加使用者的命令，但是这台服务器上并没有该用户（查看 /etc/passwd）</p>
+<p>说明这个用户名和密码是centos的用户名和密码（就是出网的那台）：</p>
+<p>前期信息收集时，22端口是开放的，所以直接使用ssh连接</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713173043162.png" alt="image-20220713173043162" loading="lazy"></p>
+<h2 id="5-2-提权"><a href="#5-2-提权" class="headerlink" title="5.2 提权"></a>5.2 提权</h2><p><strong>“想要在内网里面横向移动，首先是要在跳板机上搭建代理，所以要将centos提权“</strong>，这句话现在还不理解，继续往下学吧</p>
+<p>这里使用脏牛漏洞提权（CVE-2016-5195）</p>
+<p>通过ftp将文件传入可执行文件夹/tmp</p>
+<blockquote>
+<p>1、编译<br>gcc -pthread dirty.c -o dirty -lcrypt<br>2、执行 设置密码<br>./dirty 123456</p>
+<p>该脚本利用dirtycow漏洞的pokemon漏洞利用为基础，自动生成新的passwd行。运行二进制文件时，将提示用户输入新密码。然后将原始 /etc/passwd 文件备份到 /tmp/passwd.bak 并使用生成的firefart账户覆盖 root 帐户。运行漏洞利用后，能够使用新创建的用户登录，所以需要先将/tmp/passwd.bak删除）</p>
+</blockquote>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713181830890.png" alt="image-20220713181830890" loading="lazy"></p>
+<p>接下来重新登录就行了：</p>
+<p><img src="/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/image-20220713182001042.png" alt="image-20220713182001042" loading="lazy"></p>
+<p>可以看到uid为0，说明是root权限了</p>
+<p>到这里 centos 和 ubuntu 都提权成功了</p>
+<h2 id="5-3-继续内网信息收集"><a href="#5-3-继续内网信息收集" class="headerlink" title="5.3 继续内网信息收集"></a>5.3 继续内网信息收集</h2><p>这里使用工具 fscan ，直接将工具上传到centos上，扫描存活主机</p>
+<h2 id="5-4-隧道搭建"><a href="#5-4-隧道搭建" class="headerlink" title="5.4 隧道搭建"></a>5.4 隧道搭建</h2><p>内网机器是不出网的，为了切实模拟真实的环境，在这里建一个隧道，使用EarthWorm或者Neo-regeorg工具，在这里使用的是Neo-regeorg工具，工具连接见GitHub：<a target="_blank" rel="noopener" href="https://github.com/L-codes/Neo-reGeorg">https://github.com/L-codes/Neo-reGeorg</a></p>
+<blockquote>
+<p>什么是内网穿透：</p>
+<p>专业点来讲内网穿透就是利用各种隧道技术，以网络防火墙允许的协议，绕过网络防火墙的封锁，实现访问被封锁的目标网络。通俗点来说，就是电脑A和电脑B分别在两个不同的局域网内，而这两个局域网分别在两个不同的NAT表后面，这时A和B之间如果要进行连接、通讯或传送数据，就需要借助内网穿透技术进行连接。</p>
+</blockquote>
+<p>这里也不是很懂，大概了解一下吧</p>
+<p>到这之后的操作使用了msf，一些操作也不是很懂，等下次多了解一点再深入吧</p>
+</div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Siii0</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/" title="红日安全 ATT＆CK VulnStack靶场（三）">http://siii0.github.io/%E7%BA%A2%E6%97%A5%E5%AE%89%E5%85%A8-ATT%EF%BC%86CK-VulnStack%E9%9D%B6%E5%9C%BA%EF%BC%88%E4%B8%89%EF%BC%89/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> 许可协议。</li></ul></section></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/CVE-2016-4457%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" rel="prev" title="CVE-2016-4437-Shiro反序列化"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-left-s-line"></use></svg><span class="post-nav-text">CVE-2016-4437-Shiro反序列化</span></a></div><div class="post-nav-item"><a class="post-nav-next" href="/JNDI%E6%B3%A8%E5%85%A5/" rel="next" title="JNDI注入"><span class="post-nav-text">JNDI注入</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; Wed Jan 05 2022 08:00:00 GMT+0800 (中国标准时间) – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Siii0</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.0.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
