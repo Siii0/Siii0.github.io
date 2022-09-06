@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Siii0"><meta name="copyright" content="Siii0"><meta name="generator" content="Hexo 6.0.0"><meta name="theme" content="hexo-theme-yun"><title>Vulnhub靶机Tiki | Siii0的博客</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"siii0.github.io","root":"/","title":"Siii0","version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"fireworks":{"colors":["102, 167, 221","62, 131, 225","33, 78, 194"]}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="一、靶机介绍下载链接为 http:&#x2F;&#x2F;www.vulnhub.com&#x2F;entry&#x2F;tiki-1,525&#x2F;  描述： Oh no our webserver got compromised. The attacker used an 0day, so we dont know how he got into the admin panel. Investigate that. This is an">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vulnhub靶机Tiki">
+<meta property="og:url" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/index.html">
+<meta property="og:site_name" content="Siii0的博客">
+<meta property="og:description" content="一、靶机介绍下载链接为 http:&#x2F;&#x2F;www.vulnhub.com&#x2F;entry&#x2F;tiki-1,525&#x2F;  描述： Oh no our webserver got compromised. The attacker used an 0day, so we dont know how he got into the admin panel. Investigate that. This is an">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729160601318.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161001181.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161714955.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161813235.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161922464.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729162856067.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163152423.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163240765.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163650114.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164004713.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164357339.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164521263.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164629355.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164728438.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164740886.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729165542733.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172346479.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172737086.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172831274.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173212803.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173323470.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173849583.png">
+<meta property="og:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173912831.png">
+<meta property="article:published_time" content="2022-07-29T08:01:23.499Z">
+<meta property="article:modified_time" content="2022-07-29T15:08:08.650Z">
+<meta property="article:author" content="Siii0">
+<meta property="article:tag" content="渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729160601318.png"><script src="/js/ui/mode.js"></script></head><body><script defer src="https://cdn.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Siii0"><img width="96" loading="lazy" src="/images/tom.jpg" alt="Siii0"></a><div class="site-author-name"><a href="/about/">Siii0</a></div><span class="site-name">Siii0的博客</span><sub class="site-subtitle"></sub><div class="site-desciption">如果你停止，就是谷底，如果你还在继续，就是上坡。</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">27</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">15</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">18</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-settings-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" title="QQ 2373589667" target="_blank" style="color:#12B7F5"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-qq-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="微信 Siiioz" target="_blank" style="color:#1AAD19"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-2-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="E-Mail 2373589667@qq.com" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%9D%B6%E6%9C%BA%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">一、靶机介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%B8%97%E9%80%8F%E8%BF%87%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">二、渗透过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 信息收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E8%AE%BF%E9%97%AE80%E7%AB%AF%E5%8F%A3"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 访问80端口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 漏洞利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E8%AF%BB%E5%8F%96smb%E7%AB%AF%E5%8F%A3%E4%BF%A1%E6%81%AF"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 读取smb端口信息</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">三、总结</span></a></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="http://Siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Siii0"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Siii0的博客"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">Vulnhub靶机Tiki</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="创建时间：2022-07-29 16:01:23" itemprop="dateCreated datePublished" datetime="2022-07-29T16:01:23+08:00">2022-07-29</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E6%B8%97%E9%80%8F/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">渗透</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/%E6%B8%97%E9%80%8F/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">渗透</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h1 id="一、靶机介绍"><a href="#一、靶机介绍" class="headerlink" title="一、靶机介绍"></a>一、靶机介绍</h1><p>下载链接为 <a target="_blank" rel="noopener" href="https://www.anquanclub.cn/?golink=aHR0cDovL3d3dy52dWxuaHViLmNvbS9lbnRyeS90aWtpLTEsNTI1Lw==">http://www.vulnhub.com/entry/tiki-1,525/</a></p>
+<blockquote>
+<p>描述：</p>
+<p>Oh no our webserver got compromised. The attacker used an 0day, so we dont know how he got into the admin panel. Investigate that.</p>
+<p>This is an OSCP Prep Box, its based on a CVE I recently found. Its on the OSCP lab machines level. </p>
+<p>If you need hints contact me on Twitter: S1lky_1337, should work on VirtualBox and Vmware.</p>
+</blockquote>
+<blockquote>
+<p>攻击者使用的是 0day，所以我们不知道他是如何进入管理面板的</p>
+<p>这是一个 OSCP Prep Box，它基于我最近发现的一个 CVE。  它在 OSCP 实验室机器级别</p>
+</blockquote>
+<p>靶机默认的网络连接是仅主机模式，这里需要修改为和kali同一个网段下就行了</p>
+<p>我把靶机修改为NAT模式，因为我的kali也是NAT模式</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729160601318.png" alt="image-20220729160601318" loading="lazy"></p>
+<h1 id="二、渗透过程"><a href="#二、渗透过程" class="headerlink" title="二、渗透过程"></a>二、渗透过程</h1><h2 id="2-1-信息收集"><a href="#2-1-信息收集" class="headerlink" title="2.1 信息收集"></a>2.1 信息收集</h2><p>先使用namp扫描靶机ip</p>
+<p>我的kali ip为 192.168.150.128</p>
+<p>所以扫描同一网段下的ip：</p>
+<pre class="line-numbers language-none"><code class="language-none">nmap 192.168.150.1&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>去掉 .1 .2 .254这三个默认IP和kali的ip，剩下的131就是靶机的IP地址了</p>
+<p>可以看到靶机开放了四个端口，139和445</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161001181.png" alt="image-20220729161001181" loading="lazy"></p>
+<blockquote>
+<p>139端口 ：</p>
+<p>139端口是一种TCP端口，该端口在你通过网上邻居访问局域网中的共享文件或共享打印机时就能发挥作用。      139端口一旦被Internet上的某个攻击者利用的话，就能成为一个危害极大的安全漏洞。因为黑客要是与目标主机的139端口建立连接的话，就很有可能浏览到指定网段内所有工作站中的全部共享信息，甚至可以对目标主机中的共享文件夹进行各种编辑、删除操作，倘若攻击者还知道目标主机的IP地址和登录帐号的话，还能轻而易举地查看到目标主机中的隐藏共享信息 </p>
+<p>445端口：</p>
+<p>445端口也是一种TCP端口，该端口在Windows 2000 Server或Windows Server  2003系统中发挥的作用与139端口是完全相同的。具体地说，它也是提供局域网中文件或打印机共享服务。不过<strong>该端口是基于CIFS协议</strong>（通用因特网文件系统协议）工作的，而<strong>139端口是基于SMB协议</strong>（服务器协议族）对外提供共享服务。同样地，攻击者与445端口建立请求连接，也能获得指定局域网内的各种共享信息</p>
+</blockquote>
+<h2 id="2-2-访问80端口"><a href="#2-2-访问80端口" class="headerlink" title="2.2 访问80端口"></a>2.2 访问80端口</h2><p>显示的是一个默认页面</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161714955.png" alt="image-20220729161714955" loading="lazy"></p>
+<p>接下里来使用dirsearch进行目录扫描：</p>
+<pre class="line-numbers language-none"><code class="language-none">python3 dirsearch.py -u http:&#x2F;&#x2F;192.168.150.131:80&#x2F; -e *<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161813235.png" alt="image-20220729161813235" loading="lazy"></p>
+<p>访问 /tiki</p>
+<p>使用了Tiki Wiki CMS</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729161922464.png" alt="image-20220729161922464" loading="lazy"></p>
+<p>为了进一步利用，我们需要知道CMS的版本信息</p>
+<p>对/tiki目录进行扫描，看看有没有其他信息</p>
+<pre class="line-numbers language-none"><code class="language-none">python3 dirsearch.py -u http:&#x2F;&#x2F;192.168.150.131:80&#x2F;tiki -e * -i 200,302,500<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729162856067.png" alt="image-20220729162856067" loading="lazy"></p>
+<p>在<code>tiki/.gitattributes</code>该路径下发现了该网站的所有资源：</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163152423.png" alt="image-20220729163152423" loading="lazy"></p>
+<p>继续翻，找到一个数据库文件<code>db/tiki.sql</code>,可以直接下载：</p>
+<p>在该文件中找到类似于管理员账户的账号密码，密码被加密，那也无法利用</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163240765.png" alt="image-20220729163240765" loading="lazy"></p>
+<p>差点忘了是来找版本信息的，访问/tiki/README，其中找到了版本信息：21.1</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729163650114.png" alt="image-20220729163650114" loading="lazy"></p>
+<h2 id="2-3-漏洞利用"><a href="#2-3-漏洞利用" class="headerlink" title="2.3 漏洞利用"></a>2.3 漏洞利用</h2><p>百度该版本的漏洞信息，找到Tiki Wiki CMS Groupware 认证绕过漏洞（CVE-2020-15906）</p>
+<p>影响版本： &lt; 21.2</p>
+<p>正好可以利用</p>
+<blockquote>
+<p>Tiki Wiki CMS Groupware或简称为Tiki（最初称为TikiWiki）是一种免费且开源的基于Wiki的内容管理系统和在线办公套件。在如下这些版本21.2, 20.4, 19.3, 18.7, 17.3, 16.4前存在一处逻辑错误，管理员账户被爆破60次以上时将被锁定，此时使用空白密码即可以管理员身份登录后台。</p>
+</blockquote>
+<p>那么在登陆处抓包，爆破直到账户锁定</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164004713.png" alt="image-20220729164004713" loading="lazy"></p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164357339.png" alt="image-20220729164357339" loading="lazy"></p>
+<p>然后尝试空密码登录（抓包设置为空就行），成功登录</p>
+<p>继续翻</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164521263.png" alt="image-20220729164521263" loading="lazy"></p>
+<p>我一开始的想法就是找文件上传，不过没有成功，上传文件并没有给路径</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164629355.png" alt="image-20220729164629355" loading="lazy"></p>
+<p>但是找到一个类似账号密码的东西：silky:Agy8Y7SPJNXQzqA</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164728438.png" alt="image-20220729164728438" loading="lazy"></p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729164740886.png" alt="image-20220729164740886" loading="lazy"></p>
+<p>一开始我还以为是cms登录的账号密码</p>
+<p>但是在别的教程中看到这是ssh账号密码（下次也要多多尝试）</p>
+<p>成功登录，并且<code>sudo -i</code>切换root账户也成功了</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729165542733.png" alt="image-20220729165542733" loading="lazy"></p>
+<h2 id="2-4-读取smb端口信息"><a href="#2-4-读取smb端口信息" class="headerlink" title="2.4 读取smb端口信息"></a>2.4 读取smb端口信息</h2><p>虽然结束了，但是靶机给我们的端口肯定有它的作用</p>
+<p>这里利用了一个工具AutoRecon</p>
+<p><a target="_blank" rel="noopener" href="https://gitee.com/mirrors/autorecon?_from=gitee_search">https://gitee.com/mirrors/autorecon?_from=gitee_search</a></p>
+<blockquote>
+<p>AutoRecon是一款信息收集工具，使用方法比较简单，只需要autoreon ip就可以自动联动nmap, gobuster, nikto,如果有smb服务的话也会顺便联动smbclient之类的工具。</p>
+</blockquote>
+<blockquote>
+<p>Smbclient是基于SMB协议的,用于存取共享目标的客户端程序。</p>
+</blockquote>
+<p>扫到的文件还挺多的，打开result目录下的扫描结果</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172346479.png" alt="image-20220729172346479" loading="lazy"></p>
+<p>扫描到一个Mail.txt</p>
+<p>尝试使用空密码来登录</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172737086.png" alt="image-20220729172737086" loading="lazy"></p>
+<p>成功登录后使用get命令下载Mail.txt</p>
+<p>得到cms的密码 51lky571k1</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729172831274.png" alt="image-20220729172831274" loading="lazy"></p>
+<p>成功登录silky的账户，不过该账户下功能很少，没有可利用的</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173212803.png" alt="image-20220729173212803" loading="lazy"></p>
+<p>不过可以看到admin在 2020.7.29 创建了主页，那么可以猜测cms的版本就是2020.7.29时的最新版本</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173323470.png" alt="image-20220729173323470" loading="lazy"></p>
+<p>搜索之后，找到大概版本信息（有时会有不一样的结果，可以多找些网站的信息）</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173849583.png" alt="image-20220729173849583" loading="lazy"></p>
+<p>下图的就不一样</p>
+<p><img src="/Vulnhub%E9%9D%B6%E6%9C%BATiki/image-20220729173912831.png" alt="image-20220729173912831" loading="lazy"></p>
+<h1 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h1><p>这个靶机不算难，没有特别需要技巧的地方</p>
+<p>重点在于信息收集</p>
+</div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Siii0</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/" title="Vulnhub靶机Tiki">http://siii0.github.io/Vulnhub%E9%9D%B6%E6%9C%BATiki/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> 许可协议。</li></ul></section></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/CommonCollection4%E5%88%A9%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90/" rel="next" title="Java反序列化 CC2链分析"><span class="post-nav-text">Java反序列化 CC2链分析</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; Wed Jan 05 2022 08:00:00 GMT+0800 (中国标准时间) – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Siii0</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.0.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
