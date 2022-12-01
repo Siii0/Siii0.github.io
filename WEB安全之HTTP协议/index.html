@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Siii0"><meta name="copyright" content="Siii0"><meta name="generator" content="Hexo 6.0.0"><meta name="theme" content="hexo-theme-yun"><title>WEB安全之HTTP协议 | Siii0的博客</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"siii0.github.io","root":"/","title":"Siii0","version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"fireworks":{"colors":["102, 167, 221","62, 131, 225","33, 78, 194"]}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="一、HTTP协议http是一个简单的请求-响应协议，它通常运行在TCP之上，位于应用层。它指定了客户端可能发送给服务器什么样的消息以及得到什么样的响应。请求和响应消息的头以ASCII码形式给出；而消息内容则具有一个类似MIME的格式 二、HTTP请求方法的基本概念2.1 OPTIONSOPTIONS请求就是预检请求，可用于检测服务器允许的 http 方法。可以询问服务器通常支持哪些方法，或者对某些">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WEB安全之HTTP协议">
+<meta property="og:url" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/index.html">
+<meta property="og:site_name" content="Siii0的博客">
+<meta property="og:description" content="一、HTTP协议http是一个简单的请求-响应协议，它通常运行在TCP之上，位于应用层。它指定了客户端可能发送给服务器什么样的消息以及得到什么样的响应。请求和响应消息的头以ASCII码形式给出；而消息内容则具有一个类似MIME的格式 二、HTTP请求方法的基本概念2.1 OPTIONSOPTIONS请求就是预检请求，可用于检测服务器允许的 http 方法。可以询问服务器通常支持哪些方法，或者对某些">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130200928810.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130202653256.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130203812098.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130203843097.png">
+<meta property="og:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130210923677.png">
+<meta property="article:published_time" content="2022-11-30T11:41:05.103Z">
+<meta property="article:modified_time" content="2022-12-01T03:26:44.922Z">
+<meta property="article:author" content="Siii0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130200928810.png"><script src="/js/ui/mode.js"></script></head><body><script defer src="https://cdn.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Siii0"><img width="96" loading="lazy" src="/images/tom.jpg" alt="Siii0"></a><div class="site-author-name"><a href="/about/">Siii0</a></div><span class="site-name">Siii0的博客</span><sub class="site-subtitle"></sub><div class="site-desciption">如果你停止，就是谷底，如果你还在继续，就是上坡。</div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="首页"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="归档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">33</span></a></div><div class="site-state-item"><a href="/categories/" title="分类"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">18</span></a></div><div class="site-state-item"><a href="/tags/" title="标签"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">18</span></a></div><a class="site-state-item hty-icon-button" target="_blank" rel="noopener" href="https://yun.yunyoujun.cn" title="文档"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-settings-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" title="QQ 2373589667" target="_blank" style="color:#12B7F5"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-qq-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="微信 Siiioz" target="_blank" style="color:#1AAD19"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-2-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" title="E-Mail 2373589667@qq.com" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81HTTP%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.</span> <span class="toc-text">一、HTTP协议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81HTTP%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">2.</span> <span class="toc-text">二、HTTP请求方法的基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-OPTIONS"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 OPTIONS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-PUT"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 PUT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-DELETE"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 DELETE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-TRACE"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 TRACE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-GET"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 GET</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-6-POST"><span class="toc-number">2.6.</span> <span class="toc-text">2.6 POST</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-7-HEAD"><span class="toc-number">2.7.</span> <span class="toc-text">2.7  HEAD</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81GET%E8%AF%B7%E6%B1%82%E5%92%8CPOST%E8%AF%B7%E6%B1%82%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">3.</span> <span class="toc-text">三、GET请求和POST请求的区别</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81GET%E8%AF%B7%E6%B1%82%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A0%BC%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">四、GET请求的基本格式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81POST-%E8%AF%B7%E6%B1%82%E6%8F%90%E4%BA%A4%E8%A1%A8%E5%8D%95%EF%BC%8C%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">五、POST 请求提交表单，上传文件的方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81HTTP%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">6.</span> <span class="toc-text">六、HTTP状态码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%AF%AD%E8%A8%80%E8%8E%B7%E5%8F%96HTTP%E7%8A%B6%E6%80%81%E7%A0%81%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">6.1.</span> <span class="toc-text">用计算机语言获取HTTP状态码的方法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81HTTP%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="toc-number">7.</span> <span class="toc-text">七、HTTP头信息</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84HTTP%E9%80%9A%E7%94%A8%E5%A4%B4"><span class="toc-number">7.1.</span> <span class="toc-text">常见的HTTP通用头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84HTTP%E8%AF%B7%E6%B1%82%E5%A4%B4"><span class="toc-number">7.2.</span> <span class="toc-text">常见的HTTP请求头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84HTTP%E5%93%8D%E5%BA%94%E5%A4%B4"><span class="toc-number">7.3.</span> <span class="toc-text">常见的HTTP响应头</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84HTTP%E5%AE%9E%E4%BD%93%E5%A4%B4"><span class="toc-number">7.4.</span> <span class="toc-text">常见的HTTP实体头</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81URL"><span class="toc-number">8.</span> <span class="toc-text">八、URL</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">8.1.</span> <span class="toc-text">基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#URL%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F"><span class="toc-number">8.2.</span> <span class="toc-text">URL编码格式</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="http://Siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Siii0"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Siii0的博客"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">WEB安全之HTTP协议</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="创建时间：2022-11-30 19:41:05" itemprop="dateCreated datePublished" datetime="2022-11-30T19:41:05+08:00">2022-11-30</time><span class="post-meta-divider">-</span><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-2-line"></use></svg></span> <time title="修改时间：2022-12-01 11:26:44" itemprop="dateModified" datetime="2022-12-01T11:26:44+08:00">2022-12-01</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/WEB%E5%AE%89%E5%85%A8/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">WEB安全</span></a></span></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h1 id="一、HTTP协议"><a href="#一、HTTP协议" class="headerlink" title="一、HTTP协议"></a>一、HTTP协议</h1><p>http是一个简单的请求-响应协议，它通常运行在TCP之上，位于应用层。<br>它指定了客户端可能发送给服务器什么样的消息以及得到什么样的响应。<br>请求和响应消息的头以ASCII码形式给出；而消息内容则具有一个类似MIME的格式</p>
+<h1 id="二、HTTP请求方法的基本概念"><a href="#二、HTTP请求方法的基本概念" class="headerlink" title="二、HTTP请求方法的基本概念"></a>二、HTTP请求方法的基本概念</h1><h2 id="2-1-OPTIONS"><a href="#2-1-OPTIONS" class="headerlink" title="2.1 OPTIONS"></a>2.1 OPTIONS</h2><p>OPTIONS请求就是预检请求，可用于检测服务器允许的 http 方法。可以询问服务器通常支持哪些方法，或者对某些特殊资源支持哪些方法。（有些服务器可能只支持对一些特殊类型的对象使用特定的操作）</p>
+<p><strong>为什么会使用这种请求方法？</strong></p>
+<p>是由于<strong>跨域请求</strong>引起的，这是因为在跨域的情况下，在浏览器发起”复杂请求”时主动发起的。跨域共享标准规范要求，对那些可能对服务器数据产生副作用的 HTTP  请求方法（特别是 GET 以外的 HTTP 请求，或者搭配某些 MIME 类型的 POST 请求），浏览器必须首先使用 OPTIONS  方法发起一个预检请求（preflight request），从而获知服务端是否允许该跨域请求。服务器确认允许之后，才发起实际的 HTTP 请求。</p>
+<p><strong>关键字段：Access-Control-</strong>*</p>
+<p><img src="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130200928810.png" alt="image-20221130200928810" loading="lazy"></p>
+<h2 id="2-2-PUT"><a href="#2-2-PUT" class="headerlink" title="2.2 PUT"></a>2.2 PUT</h2><p>PUT请求是向服务器端发送数据的，从而改变信息。put请求与post一样都会改变服务器的数据，但是put的侧重点在于对于数据的修改操作，但是post侧重于对于数据的增加。</p>
+<h2 id="2-3-DELETE"><a href="#2-3-DELETE" class="headerlink" title="2.3 DELETE"></a>2.3 DELETE</h2><p>通过http请求删除指定的URL上的资源</p>
+<p>通常返回三种状态：</p>
+<ul>
+<li>200 (OK) - 删除成功，同时返回已经删除的资源</li>
+<li>202 (Accepted) - 删除请求已经接受，但没有被立即执行（资源也许已经被转移到了待删除区域）</li>
+<li>204 (No Content) - 删除请求已经被执行，但是没有返回资源（也许是请求删除不存在的资源造成的）</li>
+</ul>
+<h2 id="2-4-TRACE"><a href="#2-4-TRACE" class="headerlink" title="2.4 TRACE"></a>2.4 TRACE</h2><p>客户端发起一个请求时，这个请求可能要穿过防火墙、代理、网关或其他一些应用程序。每个中间节点都可能会修改原始的 HTTP 请求。TRACE 方法允许客户端在 最终将请求发送给服务器时，看看它变成了什么样子。</p>
+<p>当TRACE请求到达目的服务器时， 整条请求报文都会被封装在一条HTTP响应的主体中回送给发送端。</p>
+<p><strong>这种向服务端请求信息主要用于调试web服务器连接用</strong></p>
+<p><img src="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130202653256.png" alt="image-20221130202653256" loading="lazy"></p>
+<h2 id="2-5-GET"><a href="#2-5-GET" class="headerlink" title="2.5 GET"></a>2.5 GET</h2><p>感觉用图会更形象一点，下面是查资料时看到的图片：</p>
+<p><img src="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130203812098.png" alt="image-20221130203812098" loading="lazy"></p>
+<h2 id="2-6-POST"><a href="#2-6-POST" class="headerlink" title="2.6 POST"></a>2.6 POST</h2><p><img src="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130203843097.png" alt="image-20221130203843097" loading="lazy"></p>
+<h2 id="2-7-HEAD"><a href="#2-7-HEAD" class="headerlink" title="2.7  HEAD"></a>2.7  HEAD</h2><p>HEAD方法与 GET 方法类似，也是请求从服务器获取资源，服务器的处理机制也是一样的，但服务器不会返回请求的实体数据，只会传回响应头，也就是资源的“元信息”。<br>HEAD 方法可以看做是 GET 方法的一个“简化版”或者“轻量版”。因为它的响应头与 GET 完全相同，所以可以用在很多并不真正需要资源的场合，避免传输 body 数据的浪费。</p>
+<p>例如：</p>
+<p>​    检查一个文件是否存在，使用HEAD请求就够了</p>
+<h1 id="三、GET请求和POST请求的区别"><a href="#三、GET请求和POST请求的区别" class="headerlink" title="三、GET请求和POST请求的区别"></a>三、GET请求和POST请求的区别</h1><p>算是做一个记录吧</p>
+<p>这里面我们可以参考一下w3c里面说的：</p>
+<p><strong>1.GET在浏览器回退时是无害的，而POST会再次提交请求。</strong></p>
+<p>2.GET产生的URL地址可以被Bookmark，而POST不可以。</p>
+<p>3.GET请求会被浏览器主动cache，而POST不会，除非手动设置。</p>
+<p><strong>4.GET请求只能进行url编码，而POST支持多种编码方式。</strong></p>
+<p>5.GET请求参数会被完整保留在浏览器历史记录里，而POST中的参数不会被保留。</p>
+<p><strong>6.GET请求在URL中传送的参数是有长度限制的，而POST么有。</strong></p>
+<p><strong>7.对参数的数据类型，GET只接受ASCII字符，而POST没有限制。</strong>.</p>
+<p>8.GET比POST更不安全，因为参数直接暴露在URL上，所以不能用来传递敏感信息。</p>
+<p>9.GET参数通过URL传递，POST放在Request body中。</p>
+<h1 id="四、GET请求的基本格式"><a href="#四、GET请求的基本格式" class="headerlink" title="四、GET请求的基本格式"></a>四、GET请求的基本格式</h1><p>直接上图</p>
+<p><img src="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/image-20221130210923677.png" alt="image-20221130210923677" loading="lazy"></p>
+<p>1、请求行</p>
+<ul>
+<li>请求方式 GET</li>
+<li>请求的资源路径+请求参数</li>
+<li>请求的协议版本号 HTTP/2</li>
+</ul>
+<p>2、请求头</p>
+<p>由<code>key: value</code>构成的键值对</p>
+<p>而POST请求还会多一个请求体的部分，用来传递参数</p>
+<h1 id="五、POST-请求提交表单，上传文件的方法"><a href="#五、POST-请求提交表单，上传文件的方法" class="headerlink" title="五、POST 请求提交表单，上传文件的方法"></a>五、POST 请求提交表单，上传文件的方法</h1><p>1、使用postman工具</p>
+<p>2、python</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
+
+<span class="token keyword">def</span> <span class="token function">uploadFile</span><span class="token punctuation">(</span>url<span class="token punctuation">)</span><span class="token punctuation">:</span>
+<span class="token comment">#    headers=&#123;'Content-Type':'multipart/form-data'&#125;</span>
+<span class="token comment">#files=&#123;'对应表单的name':('保存的文件名','文件流'，‘rb’,'文件的Content-Type')&#125;</span>
+    files<span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token string">'file'</span><span class="token punctuation">:</span><span class="token punctuation">(</span><span class="token string">'a.jpg'</span><span class="token punctuation">,</span><span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">r'dom.jpg'</span><span class="token punctuation">,</span><span class="token string">'rb'</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token string">'image/jpeg'</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span>files<span class="token operator">=</span>files<span class="token punctuation">)</span><span class="token punctuation">.</span>text<span class="token punctuation">)</span>
+
+url<span class="token operator">=</span><span class="token string">''</span>
+uploadFile<span class="token punctuation">(</span>url<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h1 id="六、HTTP状态码"><a href="#六、HTTP状态码" class="headerlink" title="六、HTTP状态码"></a>六、HTTP状态码</h1><p>HTTP 定义了这些标准状态代码，可用于传达客户端请求的结果。状态码分为五类。</p>
+<ul>
+<li>**<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://restfulapi.net/http-status-codes/%231xx">1xx：信息性</a>**——传达传输协议级信息。</li>
+<li>**<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://restfulapi.net/http-status-codes/%232xx">2xx：成功</a>**——表示客户端的请求被成功接受。</li>
+<li>**<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://restfulapi.net/http-status-codes/%233xx">3xx：重定向</a>**——表示客户端必须采取一些额外的行动才能完成他们的请求。</li>
+<li>**<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://restfulapi.net/http-status-codes/%234xx">4xx：客户端错误</a>**——这类错误状态代码将矛头指向客户端。</li>
+<li>**<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://restfulapi.net/http-status-codes/%235xx">5xx：服务器错误</a>**——服务器对这些错误状态代码负责。</li>
+</ul>
+<p>下面列举一下平时常见的状态码：</p>
+<ul>
+<li>200 OK : 表示请求成功。</li>
+<li>301 Moved Permanently : 请求资源的 URL 已永久更改。新 URL 由<code>Location</code>响应中的标头字段给出。除非另有说明，否则此响应是可缓存的。</li>
+<li>302 Found : 请求资源的 URL 已临时更改。新 URL 由<code>Location</code>响应中的字段给出。此响应仅在由<code>Cache-Control</code>或者<code>Expires</code>标头字段指示时才可缓存。</li>
+<li>304 Not Modified : 指示客户端响应没有被修改，因此客户端可以继续使用相同的缓存版本的响应。</li>
+<li>400 Bad Request : 由于语法不正确，服务器无法理解该请求。客户端不应该在没有修改的情况下重复请求。</li>
+<li>404 Not Found : 服务器找不到请求的资源。</li>
+<li>405 方法不允许 : 服务器知道请求 HTTP 方法，但已被禁用，不能用于该资源。</li>
+<li>500 内部服务器错误 : 服务器遇到了阻止它完成请求的意外情况</li>
+</ul>
+<h2 id="用计算机语言获取HTTP状态码的方法"><a href="#用计算机语言获取HTTP状态码的方法" class="headerlink" title="用计算机语言获取HTTP状态码的方法"></a>用计算机语言获取HTTP状态码的方法</h2><p>1、python</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"http://www.baidu.com"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>status_code<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、java</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">URL</span> url <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">URL</span><span class="token punctuation">(</span><span class="token string">"http://www.baidu.com"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token class-name">HttpURLConnection</span> uc <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">HttpURLConnection</span><span class="token punctuation">)</span> url<span class="token punctuation">.</span><span class="token function">openConnection</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>uc<span class="token punctuation">.</span><span class="token function">getResponseCode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h1 id="七、HTTP头信息"><a href="#七、HTTP头信息" class="headerlink" title="七、HTTP头信息"></a>七、HTTP头信息</h1><p>HTTP头信息主要包括 HTTP通用头、HTTP请求头、HTTP响应头、HTTP实体头四个部分组成</p>
+<h2 id="常见的HTTP通用头"><a href="#常见的HTTP通用头" class="headerlink" title="常见的HTTP通用头"></a>常见的HTTP通用头</h2><p>通用头既可以在请求信息中出现也可以在响应信息中出现，其提供了与报文相关的基本信息</p>
+<ul>
+<li>Via：追踪客户端与服务器之间的请求报文和响应报文的传输路径</li>
+<li>Cache-Control : 请求和响应遵循的缓存机制</li>
+<li>Trailer : 表明以chunked编码传输的报文实体数据尾部存在的字段</li>
+<li>Transfer-Encoding:规定了传输报文实体数据采用的编码方法</li>
+<li>Date:创建HTTP报文的时间，即信息发送时间</li>
+<li>Connection:客户端和服务器指定与请求或响应连接有关的选项，例如是否需要持久连接</li>
+</ul>
+<h2 id="常见的HTTP请求头"><a href="#常见的HTTP请求头" class="headerlink" title="常见的HTTP请求头"></a>常见的HTTP请求头</h2><p>请求头是从客户端向服务器发送请求报文时所用的字段。服务器根据请求的头信息，为客户端提供响应</p>
+<ul>
+<li>Accept：指定客户端能够接收的内容类型</li>
+<li>Host：指定请求的服务器的域名和端口号</li>
+<li>Referer：先前网页的地址，当前请求网页紧随其后,即来路</li>
+<li>If-Match：只有请求内容与实体相匹配才有效</li>
+<li>If-None-Match：如果内容未改变返回304代码，参数为服务器先前发送的Etag，与服务器回应的Etag比较判断是否改变</li>
+<li>X-Requested-With ：异步请求</li>
+<li>Origin:指定请求的服务器名称，包括协议和域名</li>
+</ul>
+<h2 id="常见的HTTP响应头"><a href="#常见的HTTP响应头" class="headerlink" title="常见的HTTP响应头"></a>常见的HTTP响应头</h2><p>响应头是从服务器端向客户端发送响应报文时所用的字段</p>
+<ul>
+<li>Set-Cookie：设置Http Cookie</li>
+<li>Content-Location：请求资源可替代的备用的另一地址</li>
+<li>Server:指明服务器软件以及版本号</li>
+</ul>
+<h2 id="常见的HTTP实体头"><a href="#常见的HTTP实体头" class="headerlink" title="常见的HTTP实体头"></a>常见的HTTP实体头</h2><p>请求报文和响应报文中经常包含一些实体数据，如浏览器采用POST提交的表单数据、服务器返回给浏览器的网页数据。实体头提供了大量的有关实体数据的信息，包括实体数据的类型、长度和压缩方法等</p>
+<ul>
+<li>Allow:列出资源所支持的HTTP方法集合</li>
+<li>Content-Type:实体数据的类型</li>
+<li>Last-Modified:实体数据上次被修改的日期以及时间</li>
+<li>Content-Encoding:告知客户端服务器对实体数据的编码方式</li>
+</ul>
+<h1 id="八、URL"><a href="#八、URL" class="headerlink" title="八、URL"></a>八、URL</h1><h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>URL的英文全拼是(Uniform Resoure Locator),表达的意思是统一资源定位符，提供找到该资源的确切路径，通俗理解就是网络资源地址，也就是我们常说的网址</p>
+<p>还有一个名词URI（Uniform Resource Identifier），统一资源标识符，可以唯一标识一个资源</p>
+<p>例如：<a target="_blank" rel="noopener" href="http://www.baidu.com/a.html?a=1">http://www.baidu.com/a.html?a=1</a></p>
+<p>这个URL的组成：</p>
+<ul>
+<li>协议部分：http://、https://、ftp://</li>
+<li>域名部分（ip地址）：<a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a></li>
+<li>资源路径部分：/a.html</li>
+<li>查询参数部分：?a=1</li>
+</ul>
+<h2 id="URL编码格式"><a href="#URL编码格式" class="headerlink" title="URL编码格式"></a>URL编码格式</h2><p>url编码就是一个字符ascii码的十六进制，还需要加上%</p>
+<p>例如：<code>/</code>的十六进制是<code>2f</code>,加上%后就是<code>%2f</code></p>
+</div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Siii0</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/" title="WEB安全之HTTP协议">http://siii0.github.io/WEB%E5%AE%89%E5%85%A8%E4%B9%8BHTTP%E5%8D%8F%E8%AE%AE/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> 许可协议。</li></ul></section></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/WEB%E5%AE%89%E5%85%A8%E4%B9%8BSQL%E6%B3%A8%E5%85%A5/" rel="prev" title="WEB安全之SQL注入"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-left-s-line"></use></svg><span class="post-nav-text">WEB安全之SQL注入</span></a></div><div class="post-nav-item"><a class="post-nav-next" href="/springboot-URL%E5%B8%A6%E6%9C%89/%E5%AF%BC%E8%87%B4%E7%9A%84400%E9%94%99%E8%AF%AF/" rel="next" title="springboot URL带有%2F导致的400错误"><span class="post-nav-text">springboot URL带有%2F导致的400错误</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; Wed Jan 05 2022 08:00:00 GMT+0800 (中国标准时间) – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Siii0</span></div><div class="powered"><span>由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v6.0.0</span><span class="footer-separator">|</span><span>主题 - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
